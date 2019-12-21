@@ -5,4 +5,8 @@
     <string name="hint_password">Password</string>
     <string name="login">ログイン</string>
     <string name="login_to_vrchat">VRCHAT へログイン</string>
+    <string name="loading">読み込み中…</string>
+    <string name="welcome_message">Welcome, %s !</string>
+    <string name="logout">ログアウト</string>
+    <string name="error">エラー</string>
 </resources>
