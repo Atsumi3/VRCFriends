@@ -18,12 +18,16 @@ class LoginViewModel(private val vrChatManager: VRChatManager) : ViewModel() {
 
     val id = MutableLiveData<String>()
     val password = MutableLiveData<String>()
+    val twoFactorAuthValue = MutableLiveData<String>()
 
     private val inputIdValue: String
         get() = id.value ?: ""
 
     private val inputPasswordValue: String
         get() = password.value ?: ""
+
+    private val inputTwoFactorAuthValue: String
+        get() = twoFactorAuthValue.value ?: ""
 
     fun onLoginClick(@Suppress("UNUSED_PARAMETER") view: View?) {
         if (inputIdValue.length < 3 && inputPasswordValue.length < 5) {
@@ -34,14 +38,16 @@ class LoginViewModel(private val vrChatManager: VRChatManager) : ViewModel() {
         vrChatManager.login(
             inputIdValue,
             inputPasswordValue,
+            inputTwoFactorAuthValue,
             object : VRChatManager.LoginCallback {
                 override fun available(loggedInUserName: String) {
                     _presentWelcomeMessage.postValue(loggedInUserName)
                     _navigateToHomeScreen.postValue(Unit)
                 }
 
-                override fun unavailable() {
-                    _presentErrorMessage.postValue("ログインに失敗しました")
+                override fun unavailable(error: Throwable) {
+                    error.printStackTrace()
+                    _presentErrorMessage.postValue("ログインに失敗しました ${error.localizedMessage}")
                 }
             })
     }

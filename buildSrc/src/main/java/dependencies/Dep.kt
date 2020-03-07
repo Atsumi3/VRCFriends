@@ -5,6 +5,7 @@ object Dep {
     object GradlePlugin {
         val android = "com.android.tools.build:gradle:3.6.1"
         val kotlin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Kotlin.version}"
+        val deployGate = "com.deploygate:sdk:4.1.0"
     }
 
     object AndroidX {
@@ -12,7 +13,7 @@ object Dep {
         val appCompat = "androidx.appcompat:appcompat:1.1.0"
         val recyclerView = "androidx.recyclerview:recyclerview:1.1.0"
         val fragmentKtx = "androidx.fragment:fragment-ktx:1.2.2"
-        val design = "com.google.android.material:material:1.1.0"
+        val design = "com.google.android.material:material:1.2.0-alpha05"
     }
 
     object Kotlin {

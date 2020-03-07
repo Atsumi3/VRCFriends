@@ -14,7 +14,7 @@ val apiModules = module {
 
     single {
         val logging = HttpLoggingInterceptor()
-        logging.level = HttpLoggingInterceptor.Level.BASIC
+        logging.level = HttpLoggingInterceptor.Level.NONE
         OkHttpClient.Builder()
             .addInterceptor(ResponseHeaderInterceptor(get()))
             .addInterceptor(logging)

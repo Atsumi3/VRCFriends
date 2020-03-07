@@ -6,6 +6,6 @@ object Versions {
     val compileSdkVersion = 29
     val minSdkVersion = 21
 
-    val versionCode = 1
+    val versionCode = 2
     val versionName = "1.0.0"
 }
