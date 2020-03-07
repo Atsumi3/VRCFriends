@@ -5,24 +5,20 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import jp.bizen.vrcfriends.android.R
 import jp.bizen.vrcfriends.android.databinding.ActivityStartupBinding
+import jp.bizen.vrcfriends.android.extensions.dataBinding
 import jp.bizen.vrcfriends.android.presentation.home.HomeActivity
 import jp.bizen.vrcfriends.android.presentation.login.LoginRootActivity
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class StartupActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityStartupBinding
-    private val viewModel: StartupViewModel by lazy {
-        ViewModelProviders.of(this)[StartupViewModel::class.java]
-    }
+class StartupActivity : AppCompatActivity(R.layout.activity_startup) {
+    private val binding: ActivityStartupBinding by dataBinding()
+    private val viewModel: StartupViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_startup)
-        binding.lifecycleOwner = this
         binding.viewModel = viewModel
         setupVMEventSubscriber()
     }

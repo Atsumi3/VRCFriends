@@ -1,43 +1,29 @@
 package jp.bizen.vrcfriends.android.presentation.friendlist
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import jp.bizen.vrcfriends.android.R
 import jp.bizen.vrcfriends.android.databinding.FragmentFriendListBinding
+import jp.bizen.vrcfriends.android.extensions.dataBinding
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class FriendListFragment : Fragment() {
-    private lateinit var binding: FragmentFriendListBinding
-    private val viewModel: FriendListViewModel by lazy {
-        ViewModelProviders.of(this)[FriendListViewModel::class.java]
-    }
+class FriendListFragment : Fragment(R.layout.fragment_friend_list) {
+    private val binding: FragmentFriendListBinding by dataBinding()
+    private val viewModel: FriendListViewModel by viewModel()
     private val adapter: FriendListViewAdapter by lazy {
         FriendListViewAdapter()
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        binding = DataBindingUtil.inflate(
-            inflater,
-            R.layout.fragment_friend_list,
-            container, false
-        )
-        binding.lifecycleOwner = this
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         binding.viewModel = viewModel
         setupList(binding.list)
         setupVMEventSubscriber()
-        return binding.root
     }
 
     private fun setupList(list: RecyclerView) {
@@ -46,15 +32,15 @@ class FriendListFragment : Fragment() {
     }
 
     private fun setupVMEventSubscriber() {
-        viewModel.data.observe(this, Observer {
+        viewModel.data.observe(viewLifecycleOwner, Observer {
             adapter.data = it
         })
 
-        viewModel.navigateToStartupScreen.observe(this, Observer {
+        viewModel.navigateToStartupScreen.observe(viewLifecycleOwner, Observer {
 //            StartupActivity.createIntent(requireActivity())
         })
 
-        viewModel.presentErrorMessage.observe(this, Observer {
+        viewModel.presentErrorMessage.observe(viewLifecycleOwner, Observer {
             Toast.makeText(
                 requireContext(),
                 it,

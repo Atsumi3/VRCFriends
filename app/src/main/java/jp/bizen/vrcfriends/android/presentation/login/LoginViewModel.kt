@@ -6,7 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import jp.bizen.vrcfriends.android.model.manager.VRChatManager
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(private val vrChatManager: VRChatManager) : ViewModel() {
     private val _navigateToHomeScreen = MutableLiveData<Unit>()
     val navigateToHomeScreen: LiveData<Unit> = _navigateToHomeScreen
 
@@ -31,7 +31,7 @@ class LoginViewModel : ViewModel() {
             return
         }
 
-        VRChatManager.instance.login(
+        vrChatManager.login(
             inputIdValue,
             inputPasswordValue,
             object : VRChatManager.LoginCallback {

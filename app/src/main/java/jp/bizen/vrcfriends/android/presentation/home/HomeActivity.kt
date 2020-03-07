@@ -8,26 +8,22 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.commit
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import jp.bizen.vrcfriends.android.R
 import jp.bizen.vrcfriends.android.databinding.ActivityHomeBinding
+import jp.bizen.vrcfriends.android.extensions.dataBinding
 import jp.bizen.vrcfriends.android.presentation.dialog.YesNoDialogFragment
 import jp.bizen.vrcfriends.android.presentation.friendlist.FriendListFragment
 import jp.bizen.vrcfriends.android.presentation.startup.StartupActivity
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class HomeActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityHomeBinding
-    private val viewModel: HomeViewModel by lazy {
-        ViewModelProviders.of(this)[HomeViewModel::class.java]
-    }
+class HomeActivity : AppCompatActivity(R.layout.activity_home) {
+    private val binding: ActivityHomeBinding by dataBinding()
+    private val viewModel: HomeViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_home)
-        binding.lifecycleOwner = this
         binding.viewModel = viewModel
         setupVMEventSubscriber()
         supportFragmentManager.commit {

@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import jp.bizen.vrcfriends.android.model.manager.VRChatManager
 
-class StartupViewModel : ViewModel() {
+class StartupViewModel(private val vrChatManager: VRChatManager) : ViewModel() {
     private val _navigateToLoginScreen = MutableLiveData<Unit>()
     val navigateToLoginScreen: LiveData<Unit> = _navigateToLoginScreen
 
@@ -16,7 +16,7 @@ class StartupViewModel : ViewModel() {
     val presentWelcomeMessage: LiveData<String> = _presentWelcomeMessage
 
     fun onResume() {
-        VRChatManager.instance.login(object : VRChatManager.LoginCallback {
+        vrChatManager.login(object : VRChatManager.LoginCallback {
             override fun available(loggedInUserName: String) {
                 _presentWelcomeMessage.postValue(loggedInUserName)
                 _navigateToHomeScreen.postValue(Unit)

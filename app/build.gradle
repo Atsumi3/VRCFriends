@@ -1,3 +1,7 @@
+import dependencies.Dep
+import dependencies.Packages
+import dependencies.Versions
+
 apply plugin: 'com.android.application'
 
 apply plugin: 'kotlin-android'
@@ -7,13 +11,13 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion Versions.compileSdkVersion
     defaultConfig {
-        applicationId "jp.bizen.vrcfriends.android"
-        minSdkVersion 21
-        targetSdkVersion 29
-        versionCode 1
-        versionName "1.0.0"
+        applicationId Packages.name
+        minSdkVersion Versions.minSdkVersion
+        targetSdkVersion Versions.targetSdkVersion
+        versionCode Versions.versionCode
+        versionName Versions.versionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
@@ -25,6 +29,9 @@ android {
         }
     }
     buildTypes {
+        debug {
+            applicationIdSuffix Packages.debugNameSuffix
+        }
         release {
             minifyEnabled true
             shrinkResources true
@@ -41,32 +48,44 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    sourceSets {
+        all {
+            java.srcDirs += "src/${name}/kotlin"
+        }
+    }
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
-    implementation 'androidx.core:core-ktx:1.1.0'
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation 'androidx.fragment:fragment-ktx:1.1.0'
-    implementation 'com.google.android.material:material:1.0.0'
-    implementation "com.squareup.okhttp3:okhttp:4.2.2"
-    implementation "com.squareup.okhttp3:logging-interceptor:4.2.2"
+    implementation Dep.Kotlin.stdlibJvm
+    implementation Dep.Kotlin.coroutines
+    implementation Dep.Kotlin.coroutinesAndroid
 
-    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+    implementation Dep.AndroidX.coreKtx
+    implementation Dep.AndroidX.appCompat
+    implementation Dep.AndroidX.recyclerView
+    implementation Dep.AndroidX.fragmentKtx
+    implementation Dep.AndroidX.design
 
-    def retrofit = '2.7.0'
-    implementation "com.squareup.retrofit2:retrofit:$retrofit"
-    implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit"
-    implementation "com.squareup.retrofit2:converter-moshi:$retrofit"
+    implementation Dep.OkHttp.core
+    implementation Dep.OkHttp.loggingInterceptor
 
-    def moshi = '1.9.2'
-    implementation "com.squareup.moshi:moshi:$moshi"
-    implementation "com.squareup.moshi:moshi-kotlin:$moshi"
+    implementation Dep.Retrofit.core
+    implementation Dep.Retrofit.converterMoshi
 
-    testImplementation 'junit:junit:4.12'
+    implementation Dep.Moshi.core
+    implementation Dep.Moshi.kotlin
 
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    implementation Dep.Koin.core
+    implementation Dep.Koin.android
+    implementation Dep.Koin.androidxViewModel
+
+    testImplementation Dep.Test.junit
+    testImplementation Dep.Test.coroutinesTest
+    testImplementation Dep.Test.koinTest
+
+    androidTestImplementation Dep.Test.androidJunit4Ktx
+    androidTestImplementation Dep.Test.espressoCore
 }

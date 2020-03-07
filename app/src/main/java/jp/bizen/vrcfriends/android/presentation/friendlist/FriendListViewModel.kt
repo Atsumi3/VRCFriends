@@ -9,7 +9,7 @@ import jp.bizen.vrcfriends.android.model.entity.Friend
 import jp.bizen.vrcfriends.android.model.error.MissingAuthToken
 import jp.bizen.vrcfriends.android.model.manager.VRChatManager
 
-class FriendListViewModel : ViewModel() {
+class FriendListViewModel(private val vrChatManager: VRChatManager) : ViewModel() {
     private val _navigateToStartupScreen = MutableLiveData<Unit>()
     val navigateToStartupScreen: LiveData<Unit> = _navigateToStartupScreen
 
@@ -71,7 +71,7 @@ class FriendListViewModel : ViewModel() {
             return
         }
         requestStatus = RequestStatus.Requesting()
-        VRChatManager.instance.fetchFriends(object : VRChatManager.FriendCallback {
+        vrChatManager.fetchFriends(object : VRChatManager.FriendCallback {
             override fun success(friends: List<Friend>) {
                 requestStatus = RequestStatus.Success(friends)
             }

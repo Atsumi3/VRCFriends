@@ -1,102 +1,72 @@
 package jp.bizen.vrcfriends.android.model.manager
 
-import android.content.Context
-import android.content.SharedPreferences
-import android.os.Handler
-import android.os.Looper
-import androidx.core.content.edit
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import jp.bizen.vrcfriends.android.model.api.ApiClient
+import jp.bizen.vrcfriends.android.model.CredentialStore
+import jp.bizen.vrcfriends.android.model.api.VRChatApiService
 import jp.bizen.vrcfriends.android.model.entity.Friend
 import jp.bizen.vrcfriends.android.model.error.MissingAuthToken
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
-
-class VRChatManager private constructor(private val context: Context) {
-    private val compositeDisposable = CompositeDisposable()
-    private val preference: SharedPreferences by lazy {
-        context.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE)
-    }
-
-    // memory cache
-    private var apiKey: String? = null
-    private var authToken: String? = null
-    // file cache
-    private var credentials: String?
-        get() = preference.getString(PREFERENCE_KEY_CREDENTIALS_VALUE, null)
-        set(value) {
-            preference.edit {
-                putString(PREFERENCE_KEY_CREDENTIALS_VALUE, value)
-            }
-        }
-
-    fun updateAuthToken(value: String?) {
-        authToken = value
-    }
+class VRChatManager(
+    private val vrChatApiService: VRChatApiService,
+    private val credentialStore: CredentialStore): CoroutineScope {
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main
 
     fun login(userId: String, password: String, callback: LoginCallback) {
-        credentials = okhttp3.Credentials.basic(userId, password)
+        credentialStore.credentials = okhttp3.Credentials.basic(userId, password)
         login(callback)
     }
 
     fun login(callback: LoginCallback) {
-        if (credentials.isNullOrEmpty()) {
+        val credentials = credentialStore.credentials
+        if (credentials.isEmpty()) {
             callback.unavailable()
             return
         }
-        val subscriber = if (apiKey.isNullOrEmpty()) {
-            fetchApiKey()
-                .flatMap {
-                    apiKey = it.apiKey
-                    fetchMe(it.apiKey, credentials!!)
-                }
-        } else {
-            fetchMe(apiKey!!, credentials!!)
-        }
-        val disposable = subscriber.subscribe({
-            Handler(Looper.getMainLooper()).postDelayed({
-                callback.available(it.username)
-            }, 3000)
-        }, {
+        val errorHandler = CoroutineExceptionHandler { _, exception ->
+            exception.printStackTrace()
             callback.unavailable()
-        })
-        compositeDisposable.add(disposable)
+        }
+        launch(errorHandler) {
+            var apiKey = credentialStore.apiKey
+            if (apiKey.isNullOrEmpty()) {
+                apiKey = fetchConfig().apiKey
+                if (apiKey.isNullOrEmpty()) {
+                    callback.unavailable()
+                }
+            }
+            val user = fetchMe(apiKey, credentials)
+            callback.available(user.username)
+        }
     }
 
     fun fetchFriends(callback: FriendCallback) {
+        val apiKey = credentialStore.apiKey
+        val authToken = credentialStore.authToken
         if (apiKey.isNullOrEmpty() || authToken.isNullOrEmpty()) {
             callback.failure(MissingAuthToken())
             return
         }
-        val disposable = fetchFriends(apiKey!!, authToken!!).subscribe({
-            callback.success(it)
-        }, {
-            callback.failure(it)
-        })
-        compositeDisposable.add(disposable)
+        val errorHandler = CoroutineExceptionHandler { _, exception ->
+            callback.failure(exception)
+        }
+        launch(errorHandler) {
+            val friends = fetchFriends(apiKey, authToken)
+            callback.success(friends)
+        }
     }
 
-    private fun fetchApiKey() = ApiClient.vrChatApiService
-        .fetchConfig()
-        .observeOn(AndroidSchedulers.mainThread())
+    private suspend fun fetchConfig() = withContext(Dispatchers.Default) {
+        vrChatApiService.fetchConfig()
+    }
 
-    private fun fetchMe(apiKey: String, credentials: String) = ApiClient.vrChatApiService
-        .fetchUser(apiKey, credentials)
-        .observeOn(AndroidSchedulers.mainThread())
+    private suspend fun fetchMe(apiKey: String, credentials: String) = withContext(Dispatchers.Default) {
+        vrChatApiService.fetchUser(apiKey, credentials)
+    }
 
-    private fun fetchFriends(apiKey: String, authToken: String) = ApiClient.vrChatApiService
-        .fetchFriends(apiKey, authToken)
-        .observeOn(AndroidSchedulers.mainThread())
-
-    companion object {
-        private const val PREFERENCE_NAME = "session"
-        private const val PREFERENCE_KEY_CREDENTIALS_VALUE = "credentials_value"
-
-        lateinit var instance: VRChatManager
-
-        fun setup(context: Context) {
-            instance = VRChatManager(context)
-        }
+    private suspend fun fetchFriends(apiKey: String, authToken: String) = withContext(Dispatchers.Default) {
+        vrChatApiService.fetchFriends(apiKey, authToken)
     }
 
     interface LoginCallback {
