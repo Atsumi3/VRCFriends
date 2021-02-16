@@ -16,4 +16,8 @@ class CredentialStore(context: Context) {
     var apiKey: String? = null
     // memory cache
     var authToken: String? = null
+    set(value) {
+        field = value
+        println("updated authToken -> $value")
+    }
 }

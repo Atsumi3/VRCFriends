@@ -3,7 +3,10 @@ package jp.bizen.vrcfriends.android.presentation.startup
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
+import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import jp.bizen.vrcfriends.android.R
@@ -39,6 +42,20 @@ class StartupActivity : AppCompatActivity(R.layout.activity_startup) {
 
         viewModel.presentWelcomeMessage.observe(this, Observer {
             Toast.makeText(this, getString(R.string.welcome_message, it), Toast.LENGTH_SHORT).show()
+        })
+
+        viewModel.presentInputTwoFactorTokenScreen.observe(this, Observer {
+            val inputView = EditText(this)
+            inputView.inputType = InputType.TYPE_NUMBER_FLAG_DECIMAL
+            AlertDialog.Builder(this)
+                .setTitle("二段階認証が必要です")
+                .setView(inputView)
+                .setPositiveButton(
+                    "OK"
+                ) { _, _ -> viewModel.onInputTwoFactorTokenDialogOk(inputView.text.toString()) }
+                .setNegativeButton("ログイン画面に戻る") { _, _ -> viewModel.onInputTwoFactorTokenDialogBackToLogin()}
+                .setCancelable(false)
+                .create().show()
         })
     }
 

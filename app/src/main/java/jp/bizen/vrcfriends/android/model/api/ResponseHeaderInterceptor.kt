@@ -5,21 +5,31 @@ import okhttp3.Interceptor
 import okhttp3.Response
 
 class ResponseHeaderInterceptor(private val credentialStore: CredentialStore) : Interceptor {
+    private val regex = "^auth=(.*);".toRegex()
+
     // 集中力が切れたのでいつかRefactoringする
     override fun intercept(chain: Interceptor.Chain): Response {
-        val response = chain.proceed(chain.request())
-        if (response.headers("Set-Cookie").isNotEmpty()) {
-            for (header in response.headers("Set-Cookie")) {
-                println("HEADER -> $header")
-                if (header.contains("auth=")) {
-                    val values = header.split(";")
-                    values.forEach {
-                        val kv = it.split("=")
-                        if (kv[0] == "auth") {
-                            credentialStore.authToken = kv[1]
-                        }
+        val request = chain.request()
+        var cookie: String = request.header("cookie") ?: ""
+        val newRequestBuilder = request.newBuilder()
+        credentialStore.authToken?.let { credential ->
+            if (credential.isNotEmpty()) {
+                if (cookie.isEmpty()) {
+                    cookie += "auth=$credential"
+                } else {
+                    if (!cookie.contains("auth=")) {
+                        cookie += ";auth=$credential"
                     }
                 }
+                newRequestBuilder.addHeader("Cookie", cookie)
+            }
+        }
+
+        val response = chain.proceed(newRequestBuilder.build())
+        response.headers("Set-Cookie").forEach { header ->
+            regex.find(header)?.let {
+                credentialStore.authToken = it.groupValues[1]
+                return@forEach
             }
         }
         return response

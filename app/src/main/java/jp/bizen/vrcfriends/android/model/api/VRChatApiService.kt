@@ -3,20 +3,29 @@ package jp.bizen.vrcfriends.android.model.api
 import jp.bizen.vrcfriends.android.model.entity.Config
 import jp.bizen.vrcfriends.android.model.entity.Friend
 import jp.bizen.vrcfriends.android.model.entity.User
-import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.Query
+import jp.bizen.vrcfriends.android.model.entity.VerifyResult
+import retrofit2.http.*
 
 interface VRChatApiService {
     @GET("config")
-    fun fetchConfig(): Config
+    suspend fun fetchConfig(): Config
 
     @GET("auth/user")
-    fun fetchUser(@Query("apiKey") apiKey: String, @Header("Authorization") auth: String): User
+    suspend fun fetchUser(
+        @Query("apiKey") apiKey: String,
+        @Header("Authorization") authToken: String
+    ): User
 
     @GET("auth/user/friends")
-    fun fetchFriends(
+    suspend fun fetchFriends(
         @Query("apiKey") apiKey: String,
         @Query("authToken") authToken: String
     ): List<Friend>
+
+    @FormUrlEncoded
+    @POST("auth/twofactorauth/totp/verify")
+    suspend fun verify(
+        @Field("code") code: String,
+        @Header("Authorization") authToken: String
+    ): VerifyResult
 }
